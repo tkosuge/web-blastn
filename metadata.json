@@ -1,0 +1,6 @@
+{
+  "name": "BioBlast Web",
+  "description": "A web interface for running BLASTn searches on sequences with customizable parameters and local database support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
