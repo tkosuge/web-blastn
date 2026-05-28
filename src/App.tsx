@@ -432,11 +432,11 @@ export default function App() {
     if (seq.trim().startsWith(">")) return true;
 
     // Remove whitespace and check for non-nucleotide characters (IUPAC codes)
-    const cleanSeq = seq.replace(/\s/g, "").toUpperCase();
+    const cleanSeq = seq.replace(/\s|-|\d+/g, "").toUpperCase();
     if (cleanSeq.length === 0) return false;
     
     // ATGC and basic ambiguity codes
-    const validChars = /^[ATGCUNRYKMSWBDHVX-]+$/;
+    const validChars = /^[ATGCUNRYKMSWBDHVX]+$/;
     return validChars.test(cleanSeq);
   };
 
