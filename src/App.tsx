@@ -687,6 +687,10 @@ export default function App() {
                   className="text-xs border border-slate-300 rounded p-2 bg-white shadow-sm focus:border-orange-500 outline-none"
                 >
                   <option value="core_nt">core_nt</option>
+                  <option value="nt_euk">nt_euk</option>
+                  <option value="nt_prok">nt_prok</option>
+                  <option value="nt_viruses">nt_viruses</option>
+                  <option value="nt_other">nt_other</option>
                   <option value="16S_ribosomal_RNA">16S_ribosomal_RNA</option>
                 </select>
               </div>
