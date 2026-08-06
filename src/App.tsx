@@ -229,7 +229,7 @@ function QueryBlock({ blockText, qIndex, hasJumpBar }: { blockText: string, qInd
       </div>
       
       <div className="p-5">
-        <SummaryTable summaryText={summaryPart} onAccessionClick={scrollToAlignment} />
+        <SummaryTable summaryText={summaryPart} alignmentPart={alignmentPart} onAccessionClick={scrollToAlignment} />
         
         {alignmentPart && (
            <div className="mt-8 pt-8 border-t border-slate-100">
@@ -285,12 +285,38 @@ function QueryBlock({ blockText, qIndex, hasJumpBar }: { blockText: string, qInd
   );
 }
 
-function SummaryTable({ summaryText, onAccessionClick }: { summaryText: string, onAccessionClick: (accession: string) => void }) {
+function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summaryText: string, alignmentPart?: string, onAccessionClick: (accession: string) => void }) {
   const tableHeaderMarker = "Sequences producing significant alignments:";
   const headerIdx = summaryText.indexOf(tableHeaderMarker);
   
   if (headerIdx === -1) {
     return <pre className="text-[11px] font-mono text-slate-600 whitespace-pre leading-relaxed overflow-x-auto">{summaryText}</pre>;
+  }
+
+  // Parse strand map from alignment details
+  const strandMap: Record<string, string> = {};
+  if (alignmentPart) {
+    const blocks = alignmentPart.split(/(?=\n>|^>)/m).filter(x => x.trim());
+    for (const block of blocks) {
+      const cleaned = block.trim();
+      const fullText = cleaned.startsWith(">") ? cleaned : ">" + cleaned;
+      const firstLine = fullText.split("\n")[0];
+      const rawAcc = firstLine.substring(1).trim().split(/\s+/)[0];
+      const cleanAcc = rawAcc.replace(/^>/, '');
+      if (cleanAcc && !strandMap[cleanAcc]) {
+        const strandMatch = fullText.match(/Strand\s*=\s*(\w+)\s*\/\s*(\w+)/i);
+        if (strandMatch) {
+          const s2 = strandMatch[2].toLowerCase();
+          if (s2 === "plus") {
+            strandMap[cleanAcc] = "Plus";
+          } else if (s2 === "minus") {
+            strandMap[cleanAcc] = "Minus";
+          } else {
+            strandMap[cleanAcc] = strandMatch[2];
+          }
+        }
+      }
+    }
   }
 
   const beforeTable = summaryText.substring(0, headerIdx);
@@ -328,11 +354,12 @@ function SummaryTable({ summaryText, onAccessionClick }: { summaryText: string, 
       <div className="bg-slate-50/50 border border-slate-200 rounded-lg overflow-hidden flex flex-col">
         <div className="bg-white px-4 py-2 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
            <span className="text-slate-500">Sequences producing significant alignments:</span>
-           <div className="flex gap-6 font-mono text-[10px] lowercase tracking-normal">
-              <span>Score(Bits)</span>
-              <span>QueryCoverage</span>
-              <span>Evalue</span>
-              <span>Identity</span>
+           <div className="flex items-center justify-end gap-6 font-mono text-[10px] lowercase tracking-normal shrink-0">
+              <span className="w-20 text-right">Score(Bits)</span>
+              <span className="w-24 text-right">QueryCoverage</span>
+              <span className="w-16 text-right">Evalue</span>
+              <span className="w-16 text-right">Identity</span>
+              <span className="w-14 text-right">Strand</span>
            </div>
         </div>
         <div className="divide-y divide-slate-100">
@@ -342,8 +369,10 @@ function SummaryTable({ summaryText, onAccessionClick }: { summaryText: string, 
             
             if (parts.length >= 2) {
               const accessionDesc = parts[0];
-              const accession = accessionDesc.split(/\s+/)[0];
+              const rawAcc = accessionDesc.split(/\s+/)[0];
+              const accession = rawAcc.replace(/^>/, '');
               const stats = parts.slice(1);
+              const strand = strandMap[accession] || "-";
               
               return (
                 <div key={i} className="px-4 py-2.5 flex items-start gap-4 hover:bg-white transition-colors duration-75 group">
@@ -362,23 +391,35 @@ function SummaryTable({ summaryText, onAccessionClick }: { summaryText: string, 
                       <button 
                         onClick={() => onAccessionClick(accession)}
                         className="relative block w-full text-[11px] font-bold text-slate-700 truncate hover:text-orange-600 hover:underline hover:underline-offset-4 text-left transition-colors duration-75 cursor-pointer outline-none"
-                        title={accessionDesc.substring(accession.length).trim()}
+                        title={accessionDesc.substring(rawAcc.length).trim()}
                       >
-                        {accessionDesc.substring(accession.length).trim()}
+                        {accessionDesc.substring(rawAcc.length).trim()}
                       </button>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-end gap-8 font-mono text-[10px] min-w-[240px]">
+                  <div className="flex shrink-0 items-center justify-end gap-6 font-mono text-[10px]">
                     {stats.map((s, si) => (
                       <button 
                         key={si}
                         onClick={() => onAccessionClick(accession)}
-                        className={`relative text-right hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none ${si === stats.length - 1 || si === stats.length - 2 ? "font-bold text-orange-600" : "text-slate-400"}`}
+                        className={`relative text-right hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none ${
+                          si === 0 ? "w-20 font-bold text-orange-600" :
+                          si === 1 ? "w-24 text-slate-400" :
+                          si === 2 ? "w-16 font-bold text-orange-600" :
+                          "w-16 text-slate-400"
+                        }`}
                         title="Jump to Alignment"
                       >
                         {s}
                       </button>
                     ))}
+                    <button 
+                      onClick={() => onAccessionClick(accession)}
+                      className="w-14 text-right font-bold text-slate-600 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      title="Jump to Alignment"
+                    >
+                      {strand}
+                    </button>
                   </div>
                 </div>
               );
