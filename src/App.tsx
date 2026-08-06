@@ -285,12 +285,13 @@ function QueryBlock({ blockText, qIndex, hasJumpBar }: { blockText: string, qInd
   );
 }
 
-function formatQueryCoverage(val: string): string {
+function formatTruncatedPercent(val: string): string {
   if (!val || val === "-") return "-";
   const numStr = val.replace("%", "").trim();
   const num = parseFloat(numStr);
   if (isNaN(num)) return val;
-  return `${num.toFixed(2)}%`;
+  const truncated = Math.floor(num * 10 + 0.0000001) / 10;
+  return `${truncated}%`;
 }
 
 function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summaryText: string, alignmentPart?: string, onAccessionClick: (accession: string) => void }) {
@@ -408,7 +409,8 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
                 scoreVal = stats[0];
               }
 
-              const formattedQcov = formatQueryCoverage(qcovVal);
+              const formattedQcov = formatTruncatedPercent(qcovVal);
+              const formattedIdent = formatTruncatedPercent(identVal);
 
               return (
                 <div key={i} className="px-4 py-2.5 flex items-start gap-4 hover:bg-white transition-colors duration-75 group">
@@ -460,7 +462,7 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
                       className="w-16 text-right text-slate-500 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
                       title="Jump to Alignment"
                     >
-                      {identVal}
+                      {formattedIdent}
                     </button>
                     <button 
                       onClick={() => onAccessionClick(accession)}
