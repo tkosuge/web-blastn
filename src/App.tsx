@@ -285,6 +285,14 @@ function QueryBlock({ blockText, qIndex, hasJumpBar }: { blockText: string, qInd
   );
 }
 
+function formatQueryCoverage(val: string): string {
+  if (!val || val === "-") return "-";
+  const numStr = val.replace("%", "").trim();
+  const num = parseFloat(numStr);
+  if (isNaN(num)) return val;
+  return `${num.toFixed(2)}%`;
+}
+
 function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summaryText: string, alignmentPart?: string, onAccessionClick: (accession: string) => void }) {
   const tableHeaderMarker = "Sequences producing significant alignments:";
   const headerIdx = summaryText.indexOf(tableHeaderMarker);
@@ -354,7 +362,7 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
       <div className="bg-slate-50/50 border border-slate-200 rounded-lg overflow-hidden flex flex-col">
         <div className="bg-white px-4 py-2 border-b border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
            <span className="text-slate-500">Sequences producing significant alignments:</span>
-           <div className="flex items-center justify-end gap-6 font-mono text-[10px] lowercase tracking-normal shrink-0">
+           <div className="flex items-center justify-end gap-5 font-mono text-[10px] lowercase tracking-normal shrink-0 ml-auto">
               <span className="w-20 text-right">Score(Bits)</span>
               <span className="w-24 text-right">QueryCoverage</span>
               <span className="w-16 text-right">Evalue</span>
@@ -374,6 +382,34 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
               const stats = parts.slice(1);
               const strand = strandMap[accession] || "-";
               
+              let scoreVal = "-";
+              let qcovVal = "-";
+              let evalueVal = "-";
+              let identVal = "-";
+
+              if (stats.length >= 5) {
+                scoreVal = stats[0];
+                qcovVal = stats[2];
+                evalueVal = stats[3];
+                identVal = stats[4];
+              } else if (stats.length === 4) {
+                scoreVal = stats[0];
+                qcovVal = stats[1];
+                evalueVal = stats[2];
+                identVal = stats[3];
+              } else if (stats.length === 3) {
+                scoreVal = stats[0];
+                qcovVal = stats[1];
+                evalueVal = stats[2];
+              } else if (stats.length === 2) {
+                scoreVal = stats[0];
+                evalueVal = stats[1];
+              } else if (stats.length === 1) {
+                scoreVal = stats[0];
+              }
+
+              const formattedQcov = formatQueryCoverage(qcovVal);
+
               return (
                 <div key={i} className="px-4 py-2.5 flex items-start gap-4 hover:bg-white transition-colors duration-75 group">
                   <div className="flex-1 min-w-0">
@@ -397,22 +433,35 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
                       </button>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-end gap-6 font-mono text-[10px]">
-                    {stats.map((s, si) => (
-                      <button 
-                        key={si}
-                        onClick={() => onAccessionClick(accession)}
-                        className={`relative text-right hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none ${
-                          si === 0 ? "w-20 font-bold text-orange-600" :
-                          si === 1 ? "w-24 text-slate-400" :
-                          si === 2 ? "w-16 font-bold text-orange-600" :
-                          "w-16 text-slate-400"
-                        }`}
-                        title="Jump to Alignment"
-                      >
-                        {s}
-                      </button>
-                    ))}
+                  <div className="flex shrink-0 items-center justify-end gap-5 font-mono text-[10px] ml-auto">
+                    <button 
+                      onClick={() => onAccessionClick(accession)}
+                      className="w-20 text-right font-bold text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      title="Jump to Alignment"
+                    >
+                      {scoreVal}
+                    </button>
+                    <button 
+                      onClick={() => onAccessionClick(accession)}
+                      className="w-24 text-right text-slate-500 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      title="Jump to Alignment"
+                    >
+                      {formattedQcov}
+                    </button>
+                    <button 
+                      onClick={() => onAccessionClick(accession)}
+                      className="w-16 text-right font-bold text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      title="Jump to Alignment"
+                    >
+                      {evalueVal}
+                    </button>
+                    <button 
+                      onClick={() => onAccessionClick(accession)}
+                      className="w-16 text-right text-slate-500 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      title="Jump to Alignment"
+                    >
+                      {identVal}
+                    </button>
                     <button 
                       onClick={() => onAccessionClick(accession)}
                       className="w-14 text-right font-bold text-slate-600 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
