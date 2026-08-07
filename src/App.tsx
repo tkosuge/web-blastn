@@ -365,9 +365,9 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
            <span className="text-slate-500">Sequences producing significant alignments:</span>
            <div className="flex items-center justify-end gap-5 font-mono text-[10px] lowercase tracking-normal shrink-0 ml-auto">
               <span className="w-20 text-right">Score(Bits)</span>
-              <span className="w-24 text-right">QueryCoverage</span>
+              <span className="w-24 text-right">≈QueryCoverage</span>
               <span className="w-16 text-right">Evalue</span>
-              <span className="w-16 text-right">Identity</span>
+              <span className="w-16 text-right">≈Identity</span>
               <span className="w-14 text-right">Strand</span>
            </div>
         </div>
