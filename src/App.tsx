@@ -365,7 +365,7 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
            <span className="text-slate-500">Sequences producing significant alignments:</span>
            <div className="flex items-center justify-end gap-5 font-mono text-[10px] lowercase tracking-normal shrink-0 ml-auto">
               <span className="w-20 text-right">Score(Bits)</span>
-              <span className="w-24 text-right">≈QueryCoverage</span>
+              <span className="w-16 text-right">≈QueryCoverage</span>
               <span className="w-16 text-right">Evalue</span>
               <span className="w-16 text-right">≈Identity</span>
               <span className="w-14 text-right">Strand</span>
@@ -445,7 +445,7 @@ function SummaryTable({ summaryText, alignmentPart, onAccessionClick }: { summar
                     </button>
                     <button 
                       onClick={() => onAccessionClick(accession)}
-                      className="w-24 text-right text-slate-500 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
+                      className="w-16 text-right text-slate-500 hover:text-orange-600 hover:underline hover:underline-offset-4 cursor-pointer transition-colors duration-75 outline-none"
                       title="Jump to Alignment"
                     >
                       {formattedQcov}
